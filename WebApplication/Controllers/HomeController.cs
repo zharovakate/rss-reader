@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using System.ServiceModel.Syndication;
-using System.Xml;    
+using System.Text.RegularExpressions;
+using System.Xml;
 
 
 namespace WebApplication.Controllers
@@ -19,21 +20,21 @@ namespace WebApplication.Controllers
             buildReferenceMapFromRSS(url1);
 //            buildReferenceMapFromRSS(url2);
         }
-        
+
         public ActionResult Blogs()
         {
             populateFeed();
-            
+
             var blogsList = blogsReferences.ToList();
             ViewBag.Blogs = blogsList;
-             
-            return View();         
+
+            return View();
         }
-        
+
         public ActionResult Articles()
         {
             populateFeed();
-            
+
             var articleList = articleReferences.ToList();
             ViewBag.Article = articleList;
 
@@ -43,16 +44,32 @@ namespace WebApplication.Controllers
         public ActionResult Authors()
         {
             populateFeed();
-            
+
             var authorsList = authorReferences.ToList();
             ViewBag.Authors = authorsList;
 
             return View();
         }
-        
+
         private Dictionary<string, int> authorReferences = new Dictionary<string, int>();
         private Dictionary<string, int> blogsReferences = new Dictionary<string, int>();
         private Dictionary<string, int> articleReferences = new Dictionary<string, int>();
+
+        Regex urlRegex =
+            new Regex(@"((http|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?)");
+
+        public List<Uri> findAllUrls(string content)
+        {
+            var urls = new List<Uri>();
+
+            foreach (var match in urlRegex.Matches(content))
+            {
+                var url = ((Match) match).Value;
+                urls.Add(new Uri(url));
+            }
+
+            return urls;
+        }
 
         public void buildReferenceMapFromRSS(string url)
         {
@@ -61,7 +78,7 @@ namespace WebApplication.Controllers
 
             if (feed == null)
                 return;
-            
+
             var authorsMap = new Dictionary<string, int>();
             var blogsMap = new Dictionary<string, int>();
             var articleMap = new Dictionary<string, int>();
@@ -79,38 +96,37 @@ namespace WebApplication.Controllers
                         authorsMap[name] = authorsMap[name] + 1;
                 }
 
-                foreach (var link in item.Links)
+                var content = item.Content as TextSyndicationContent;
+                if (content == null)
+                    continue;
+
+                foreach (var uri in findAllUrls(content.Text))
                 {
-                    var uri = link.GetAbsoluteUri();
-                    if (uri == null)
-                        continue;
                     var blogURL = uri.GetLeftPart(UriPartial.Authority);
                     if (!blogsMap.ContainsKey(blogURL))
                         blogsMap[blogURL] = 1;
                     else
-                        blogsMap[blogURL] = blogsMap[blogURL] + 1;    
-                }
-                
-                foreach (var link in item.Links)
-                {
-                    var uri = link.GetAbsoluteUri();
-                    if (uri == null)
-                        continue;
+                        blogsMap[blogURL] = blogsMap[blogURL] + 1;
+
                     var articleURL = uri.GetLeftPart(UriPartial.Path);
                     if (!articleMap.ContainsKey(articleURL))
                         articleMap[articleURL] = 1;
                     else
                         articleMap[articleURL] = articleMap[articleURL] + 1;
+
+                    Console.WriteLine(blogURL, articleURL);
                 }
+
+                break;
             }
-            
-           authorReferences = merge(authorsMap, authorReferences);
-           blogsReferences = merge(blogsMap, blogsReferences);
-           articleReferences = merge(articleMap, articleReferences);
+
+            authorReferences = merge(authorsMap, authorReferences);
+            blogsReferences = merge(blogsMap, blogsReferences);
+            articleReferences = merge(articleMap, articleReferences);
         }
-        
-        
-        public Dictionary<string, int> merge (Dictionary<string, int> one, Dictionary<string, int> other)
+
+
+        public Dictionary<string, int> merge(Dictionary<string, int> one, Dictionary<string, int> other)
         {
             var copy = new Dictionary<string, int>(one);
             foreach (var kv in other)
@@ -121,7 +137,7 @@ namespace WebApplication.Controllers
                 else
                     copy[kv.Key] = kv.Value;
             }
-            
+
             return copy;
         }
     }
