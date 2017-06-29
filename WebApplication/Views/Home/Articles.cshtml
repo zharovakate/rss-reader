@@ -1,0 +1,20 @@
+﻿@{
+    ViewBag.Title = "Articles";
+}
+<h2>@ViewBag.Title.</h2>
+<h3>@ViewBag.Message</h3>
+
+<div class="row">
+      <div class="col-md-12">
+        @foreach (var article in ViewBag.Article)
+        {
+          <p>
+            @article.Key
+            @article.Value
+          </p>
+        }
+      </div>
+</div>
+
+
+
