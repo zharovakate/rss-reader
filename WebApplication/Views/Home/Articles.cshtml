@@ -5,15 +5,22 @@
 <h3>@ViewBag.Message</h3>
 
 <div class="row">
-      <div class="col-md-12">
-        @foreach (var article in ViewBag.Article)
-        {
-          <p>
-            @article.Key
-            @article.Value
-          </p>
-        }
+  <div class="col-md-12">
+    @foreach (var article in ViewBag.Article)
+    {
+      <div class="col-md-7">
+
+        <a href="@article.Key">@article.Key</a>
+                    
       </div>
+
+      <div class="col-md-5">
+        <p>
+          @article.Value
+        </p>
+      </div>
+    }
+  </div>
 </div>
 
 

@@ -27,6 +27,8 @@ namespace WebApplication.Controllers
 
             var blogsList = blogsReferences.ToList();
             ViewBag.Blogs = blogsList;
+            
+            blogsList.Sort((x, y) => y.Value - x.Value);
 
             return View();
         }
@@ -37,6 +39,8 @@ namespace WebApplication.Controllers
 
             var articleList = articleReferences.ToList();
             ViewBag.Article = articleList;
+            
+            articleList.Sort((x, y) => y.Value - x.Value);
 
             return View();
         }
@@ -117,7 +121,6 @@ namespace WebApplication.Controllers
                     Console.WriteLine(blogURL, articleURL);
                 }
 
-                break;
             }
 
             authorReferences = merge(authorsMap, authorReferences);

@@ -8,10 +8,17 @@
     <div class="col-md-12">
         @foreach (var blog in ViewBag.Blogs)
         {
-            <p>
-                @blog.Key
-                @blog.Value
-            </p>
+            <div class="col-md-7">
+
+                <a href="@blog.Key">@blog.Key</a>
+                    
+            </div>
+
+            <div class="col-md-5">
+                <p>
+                    @blog.Value
+                </p>
+            </div>
         }
-    </div>   
+    </div>
 </div>
